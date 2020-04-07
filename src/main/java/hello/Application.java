@@ -1,18 +1,13 @@
 package hello;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
-import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
-import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 @SpringBootApplication
@@ -30,29 +25,34 @@ public class Application {
   }
 
   @RequestMapping("/")
-  public String index() {
-    int num = randomNum();
-
-    List<String> words = IntStream
-            .range(0, num)
-            .mapToObj(i -> randomWord())
-            .collect(Collectors.toList());
-
-    return String.join(" ", words);
+  public Mono<String> index() {
+    return randomNum().flatMap(num -> IntStream
+              .range(0, num)
+              .mapToObj(i -> randomWord())
+              .reduce((a, b) -> a.zipWith(b, (s1, s2) -> s1 + " " + s2))
+              .orElse(Mono.just(""))
+    );
   }
 
-  @Autowired
-  private RestTemplateBuilder builder;
+  private WebClient webClient = WebClient.create();
 
-  private int randomNum() {
-    RestTemplate restTemplate = builder.build();
-    String body = restTemplate.getForEntity(randomNumUrl, String.class).getBody();
-    return Integer.parseInt(body);
+  private Mono<Integer> randomNum() {
+    return webClient
+            .get()
+            .uri("http://randnum.herokuapp.com/")
+            .retrieve()
+            .bodyToMono(String.class)
+            .map(Integer::parseInt)
+            .log();
   }
 
-  private String randomWord() {
-    RestTemplate restTemplate = builder.build();
-    return restTemplate.getForEntity(randomWordUrl, String.class).getBody();
+  private Mono<String> randomWord() {
+    return webClient
+            .get()
+            .uri("http://random-word.herokuapp.com/")
+            .retrieve()
+            .bodyToMono(String.class)
+            .log();
   }
 }
 
