@@ -30,7 +30,7 @@ public class Application {
               .range(0, num)
               .mapToObj(i -> randomWord())
               .reduce((a, b) -> a.zipWith(b, (s1, s2) -> s1 + " " + s2))
-              .orElse(Mono.just(""))
+              .orElse(Mono.error(new Exception("Could not fetch words")))
     );
   }
 
@@ -42,8 +42,7 @@ public class Application {
             .uri("http://randnum.herokuapp.com/")
             .retrieve()
             .bodyToMono(String.class)
-            .map(Integer::parseInt)
-            .log();
+            .map(Integer::parseInt);
   }
 
   private Mono<String> randomWord() {
@@ -51,8 +50,7 @@ public class Application {
             .get()
             .uri("http://random-word.herokuapp.com/")
             .retrieve()
-            .bodyToMono(String.class)
-            .log();
+            .bodyToMono(String.class);
   }
 }
 
