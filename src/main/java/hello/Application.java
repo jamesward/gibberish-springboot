@@ -16,6 +16,9 @@ import java.util.stream.IntStream;
 @RestController
 public class Application {
 
+  final String randomNumUrl = "https://random-num-weurlhfjnq-uc.a.run.app/";
+  final String randomWordUrl = "https://random-word-weurlhfjnq-uc.a.run.app/";
+
   public static void main(String[] args) {
     SpringApplication.run(Application.class, args);
   }
@@ -37,13 +40,13 @@ public class Application {
 
   private int randomNum() {
     RestTemplate restTemplate = builder.build();
-    String body = restTemplate.getForEntity("http://randnum.herokuapp.com/", String.class).getBody();
+    String body = restTemplate.getForEntity(randomNumUrl, String.class).getBody();
     return Integer.parseInt(body);
   }
 
   private String randomWord() {
     RestTemplate restTemplate = builder.build();
-    return restTemplate.getForEntity("http://random-word.herokuapp.com/", String.class).getBody();
+    return restTemplate.getForEntity(randomWordUrl, String.class).getBody();
   }
 }
 
