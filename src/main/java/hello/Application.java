@@ -39,7 +39,7 @@ public class Application {
   private Mono<Integer> randomNum() {
     return webClient
             .get()
-            .uri("http://randnum.herokuapp.com/")
+            .uri(randomNumUrl)
             .retrieve()
             .bodyToMono(String.class)
             .map(Integer::parseInt);
@@ -48,7 +48,7 @@ public class Application {
   private Mono<String> randomWord() {
     return webClient
             .get()
-            .uri("http://random-word.herokuapp.com/")
+            .uri(randomWordUrl)
             .retrieve()
             .bodyToMono(String.class);
   }
